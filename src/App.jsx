@@ -26,10 +26,33 @@ function App() {
     }
 
     setIsSubmitting(true)
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setIsSubmitted(true)
+
+    try {
+      // Send to Formspree - replace YOUR_FORM_ID with actual ID from formspree.io
+      const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          source: 'Ecom Academy Landing Page',
+          timestamp: new Date().toLocaleString('he-IL'),
+        }),
+      })
+
+      if (response.ok) {
+        setIsSubmitted(true)
+      } else {
+        throw new Error('Form submission failed')
+      }
+    } catch (error) {
+      alert('שגיאה בשליחה, אנא נסו שוב')
+      console.error('Form error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
