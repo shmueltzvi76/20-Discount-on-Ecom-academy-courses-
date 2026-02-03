@@ -27,23 +27,36 @@ function App() {
 
     setIsSubmitting(true)
 
-    try {
-      // Send to Formspree - replace YOUR_FORM_ID with actual ID from formspree.io
-      const response = await fetch('https://formspree.io/f/xnjzlbvy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          source: 'Ecom Academy Landing Page',
-          timestamp: new Date().toLocaleString('he-IL'),
-        }),
-      })
+    const submissionData = {
+      name: formData.name,
+      phone: formData.phone,
+      source: 'Ecom Academy Landing Page',
+      timestamp: new Date().toLocaleString('he-IL'),
+    }
 
-      if (response.ok) {
+    try {
+      // Send to both Formspree and Make.com webhook in parallel
+      const [formspreeResponse] = await Promise.all([
+        // Formspree for email backup
+        fetch('https://formspree.io/f/xnjzlbvy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(submissionData),
+        }),
+        // Make.com webhook for WhatsApp notification
+        fetch('https://hook.eu1.make.com/gnxlb8vexco37kxy03j7crx1pp4putjy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(submissionData),
+        }).catch(err => console.log('Make.com webhook error:', err)),
+      ])
+
+      if (formspreeResponse.ok) {
         setIsSubmitted(true)
       } else {
         throw new Error('Form submission failed')
